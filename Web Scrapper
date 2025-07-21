@@ -1,0 +1,28 @@
+import requests
+from bs4 import BeautifulSoup
+import csv
+
+# Target website (safe for scraping)
+URL = 'http://books.toscrape.com/'
+
+def scrape_books():
+    response = requests.get(URL)
+    soup = BeautifulSoup(response.text, 'html.parser')
+
+    # Open CSV file for writing
+    with open('books.csv', mode='w', newline='', encoding='utf-8') as file:
+        writer = csv.writer(file)
+        writer.writerow(['Title', 'Price', 'Rating'])
+
+        # Loop through all products on the page
+        for book in soup.select('article.product_pod'):
+            title = book.h3.a['title']
+            price = book.select_one('.price_color').text.replace('£', '')
+            rating = book.p['class'][1]  # e.g., 'Three', 'Five'
+
+            writer.writerow([title, price, rating])
+
+    print("Scraping complete. Data saved to books.csv.")
+
+# Run the scraper
+scrape_books()
